@@ -7,42 +7,53 @@ import java.util.Date;
 import java.util.regex.Pattern;
 
 public class Metodos {
-    
+
+    // Scanner para entrada de dados via terminal
     private static final Scanner scanner = new Scanner(System.in);
+
+    // Expressão regular usada para validar endereços de e-mail
     private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@(.+)$";
+    // Compila a expressão regular para facilitar a validação de e-mails
     private static final Pattern emailPattern = Pattern.compile(EMAIL_REGEX);
 
-    // MÉTODOS PARA ALUNOS
+    // ================= MÉTODOS PARA ALUNOS ================= //
+
+    /**
+     * Cadastra um novo aluno.
+     * Solicita os dados via terminal, valida e persiste no banco de dados.
+     */
     public static void cadastrarAluno() {
         try {
             System.out.println("\n=== CADASTRO DE ALUNO ===");
 
-            // Solicitar RGM
+            // Leitura e validação do RGM (deve ter 8 dígitos numéricos)
             int rgm;
             while (true) {
                 System.out.print("Digite o RGM do aluno (8 dígitos): ");
                 String rgmInput = scanner.nextLine();
 
+                // Verifica se o RGM possui exatamente 8 caracteres
                 if (rgmInput.length() != 8) {
                     System.out.println("RGM deve ter exatamente 8 dígitos!");
-                    continue;
+                    continue; // volta para pedir novamente o RGM
                 }
 
                 try {
+                    // Tenta converter o RGM para inteiro, para garantir que é numérico
                     rgm = Integer.parseInt(rgmInput);
-                    break;
+                    break; // sai do loop se for válido
                 } catch (NumberFormatException e) {
                     System.out.println("RGM deve conter apenas números!");
                 }
             }
 
-            // Verificar se RGM já existe
+            // Verifica se já existe um aluno cadastrado com o mesmo RGM
             if (alunoExiste(rgm)) {
                 System.out.println("Erro: Este RGM já está cadastrado!");
-                return;
+                return; // encerra o cadastro para evitar duplicidade
             }
 
-            // Solicitar nome
+            // Solicita e valida o nome completo do aluno
             String nome;
             do {
                 System.out.print("Nome completo: ");
@@ -52,7 +63,7 @@ public class Metodos {
                 }
             } while (nome.isEmpty());
 
-            // Solicitar endereço
+            // Solicita e valida o endereço do aluno
             String endereco;
             do {
                 System.out.print("Endereço: ");
@@ -62,29 +73,32 @@ public class Metodos {
                 }
             } while (endereco.isEmpty());
 
-            // Solicitar e-mail
+            // Solicita e valida o e-mail do aluno
             String email;
             do {
                 System.out.print("E-mail: ");
                 email = scanner.nextLine().trim();
+
+                // Chama o método validarEmail que usa regex para checar o formato
                 if (validarEmail(email)) {
                     System.out.println("E-mail inválido!");
                 }
-            } while (validarEmail(email));
+            } while (validarEmail(email)); // repete enquanto o email for inválido
 
-            // Confirmar cadastro
+            // Exibe os dados informados para o usuário conferir antes de salvar
             System.out.println("\nDados do aluno:");
             System.out.println("RGM: " + rgm);
             System.out.println("Nome: " + nome);
             System.out.println("Endereço: " + endereco);
             System.out.println("E-mail: " + email);
 
+            // Pede confirmação para salvar o aluno no banco
             if (confirmarOperacao("Confirmar cadastro")) {
                 System.out.println("Cadastro cancelado.");
-                return;
+                return; // cancela se usuário não confirmar
             }
 
-            // Inserir no banco de dados
+            // Insere os dados no banco usando PreparedStatement para evitar SQL injection
             try (Connection conn = ConexaoMySQL.getConexao();
                  PreparedStatement stmt = conn.prepareStatement(
                          "INSERT INTO Cliente (RGM, Nome, Endereco, Email) VALUES (?, ?, ?, ?)")) {
@@ -94,6 +108,7 @@ public class Metodos {
                 stmt.setString(3, endereco);
                 stmt.setString(4, email);
 
+                // Executa o comando SQL e verifica se alguma linha foi afetada
                 int linhasAfetadas = stmt.executeUpdate();
 
                 if (linhasAfetadas > 0) {
@@ -107,37 +122,42 @@ public class Metodos {
         } catch (Exception e) {
             System.err.println("Erro inesperado: " + e.getMessage());
         } finally {
-            pausar();
+            pausar(); // Aguarda o usuário pressionar algo para continuar
         }
     }
 
+    /**
+     * Permite editar dados de um aluno.
+     * O usuário escolhe qual campo deseja alterar.
+     */
     public static void editarAluno() {
         try {
             System.out.println("\n=== EDITAR ALUNO ===");
 
-            // Solicitar RGM do aluno
+            // Solicita o RGM do aluno que será editado
             System.out.print("Digite o RGM do aluno a editar: ");
             int rgm = Integer.parseInt(scanner.nextLine());
 
-            // Verificar se aluno existe
+            // Verifica se o aluno existe no banco
             if (!alunoExiste(rgm)) {
                 System.out.println("Aluno não encontrado!");
                 return;
             }
 
-            // Mostrar dados atuais
+            // Busca os dados atuais do aluno para mostrar na tela
             Aluno aluno = buscarAluno(rgm);
             if (aluno == null) {
                 System.out.println("Erro ao buscar dados do aluno.");
                 return;
             }
 
+            // Mostra os dados atuais para o usuário escolher o que editar
             System.out.println("\nDados atuais:");
             System.out.println("1. Nome: " + aluno.getNome());
             System.out.println("2. Endereço: " + aluno.getEndereco());
             System.out.println("3. E-mail: " + aluno.getEmail());
 
-            // Menu de edição
+            // Menu com opções para editar
             System.out.println("\nO que deseja editar?");
             System.out.println("1. Nome");
             System.out.println("2. Endereço");
@@ -147,9 +167,10 @@ public class Metodos {
 
             int opcao = Integer.parseInt(scanner.nextLine());
 
-            String novoValor ;
-            String campo ;
+            String novoValor;
+            String campo;
 
+            // De acordo com a escolha, pede o novo valor e define o campo a alterar no banco
             switch (opcao) {
                 case 1:
                     System.out.print("Novo nome: ");
@@ -162,6 +183,7 @@ public class Metodos {
                     campo = "Endereco";
                     break;
                 case 3:
+                    // Valida o novo e-mail com regex, repete até ser válido
                     do {
                         System.out.print("Novo e-mail: ");
                         novoValor = scanner.nextLine().trim();
@@ -174,18 +196,19 @@ public class Metodos {
                     break;
                 case 0:
                     System.out.println("Edição cancelada.");
-                    return;
+                    return; // cancela edição se opção 0
                 default:
                     System.out.println("Opção inválida.");
-                    return;
+                    return; // sai se opção inválida
             }
 
+            // Confirma alteração com o usuário antes de atualizar no banco
             if (confirmarOperacao("Confirmar alteração")) {
                 System.out.println("Edição cancelada.");
                 return;
             }
 
-            // Atualizar no banco
+            // Atualiza o campo escolhido no banco
             try (Connection conn = ConexaoMySQL.getConexao();
                  PreparedStatement stmt = conn.prepareStatement(
                          "UPDATE Cliente SET " + campo + " = ? WHERE RGM = ?")) {
@@ -208,25 +231,28 @@ public class Metodos {
         } catch (Exception e) {
             System.err.println("Erro inesperado: " + e.getMessage());
         } finally {
-            pausar();
+            pausar(); // Espera ação do usuário
         }
     }
 
+    /**
+     * Exclui um aluno e seus relacionamentos do banco de dados.
+     */
     public static void excluirAluno() {
         try {
             System.out.println("\n=== EXCLUIR ALUNO ===");
 
-            // Solicitar RGM do aluno
+            // Solicita o RGM do aluno a ser excluído
             System.out.print("Digite o RGM do aluno a excluir: ");
             int rgm = Integer.parseInt(scanner.nextLine());
 
-            // Verificar se aluno existe
+            // Verifica se o aluno realmente existe
             if (!alunoExiste(rgm)) {
                 System.out.println("Aluno não encontrado!");
                 return;
             }
 
-            // Mostrar dados do aluno
+            // Busca os dados do aluno para mostrar antes da exclusão
             Aluno aluno = buscarAluno(rgm);
             if (aluno != null) {
                 System.out.println("\nDados do aluno:");
@@ -235,21 +261,22 @@ public class Metodos {
                 System.out.println("E-mail: " + aluno.getEmail());
             }
 
+            // Solicita confirmação do usuário para excluir
             if (confirmarOperacao("Tem certeza que deseja excluir este aluno?")) {
                 System.out.println("Exclusão cancelada.");
                 return;
             }
 
-            // Excluir aluno com tratamento de transação
             Connection conn = null;
             try {
+                // Abre conexão e desabilita commit automático para controlar transação
                 conn = ConexaoMySQL.getConexao();
-                conn.setAutoCommit(false); // Iniciar transação
+                conn.setAutoCommit(false);
 
-                // 1. Excluir relacionamentos
+                // Exclui registros relacionados ao aluno (ex: empréstimos)
                 excluirRelacionamentosAluno(conn, rgm);
 
-                // 2. Excluir o aluno
+                // Exclui o aluno da tabela Cliente
                 try (PreparedStatement stmt = conn.prepareStatement(
                         "DELETE FROM Cliente WHERE RGM = ?")) {
 
@@ -257,16 +284,19 @@ public class Metodos {
                     int linhas = stmt.executeUpdate();
 
                     if (linhas == 0) {
+                        // Se falhar, faz rollback para desfazer exclusão parcial
                         conn.rollback();
                         System.out.println("Falha ao excluir aluno.");
                         return;
                     }
                 }
 
-                conn.commit(); // Confirmar transação
+                // Confirma exclusão no banco
+                conn.commit();
                 System.out.println("Aluno excluído com sucesso!");
 
             } catch (SQLException e) {
+                // Se erro, faz rollback para manter banco consistente
                 if (conn != null) {
                     try {
                         conn.rollback();
@@ -276,6 +306,7 @@ public class Metodos {
                 }
                 throw e;
             } finally {
+                // Restaura o auto commit e fecha conexão
                 if (conn != null) {
                     try {
                         conn.setAutoCommit(true);
@@ -292,19 +323,26 @@ public class Metodos {
         } catch (Exception e) {
             System.err.println("Erro inesperado: " + e.getMessage());
         } finally {
-            pausar();
+            pausar(); // Espera o usuário pressionar algo antes de continuar
         }
     }
 
+    /**
+     * Lista todos os alunos cadastrados.
+     * Mostra RGM, nome e e-mail, ordenados por nome.
+     */
     public static void listarAlunos() {
         try {
             System.out.println("\n=== LISTA DE ALUNOS ===");
 
+            // Abre conexão, cria Statement e executa consulta SQL para buscar alunos
             try (Connection conn = ConexaoMySQL.getConexao();
                  Statement stmt = conn.createStatement();
                  ResultSet rs = stmt.executeQuery("SELECT RGM, Nome, Email FROM Cliente ORDER BY Nome")) {
 
                 boolean encontrou = false;
+
+                // Percorre resultados, exibindo os dados de cada aluno
                 while (rs.next()) {
                     encontrou = true;
                     System.out.println("\nRGM: " + rs.getInt("RGM"));
@@ -314,6 +352,7 @@ public class Metodos {
                     System.out.println("---");
                 }
 
+                // Se não encontrou nenhum aluno, avisa o usuário
                 if (!encontrou) {
                     System.out.println("Nenhum aluno cadastrado.");
                 }
@@ -321,7 +360,7 @@ public class Metodos {
         } catch (SQLException e) {
             System.err.println("Erro ao buscar alunos: " + e.getMessage());
         } finally {
-            pausar();
+            pausar(); // Pausa para o usuário ver a lista antes de continuar
         }
     }
 
