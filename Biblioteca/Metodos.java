@@ -363,5 +363,362 @@ public class Metodos {
             pausar(); // Pausa para o usuário ver a lista antes de continuar
         }
     }
+ // MÉTODOS PARA LIVROS
+    public static void cadastrarLivro() {
+        try {
+            System.out.println("\n=== CADASTRO DE LIVRO ===");
+
+            // Solicitar dados do livro
+            String titulo;
+            do {
+                System.out.print("Título: ");
+                titulo = scanner.nextLine().trim();
+                if (titulo.isEmpty()) {
+                    System.out.println("Título não pode ser vazio!");
+                }
+            } while (titulo.isEmpty());
+
+            String autor;
+            do {
+                System.out.print("Autor: ");
+                autor = scanner.nextLine().trim();
+                if (autor.isEmpty()) {
+                    System.out.println("Autor não pode ser vazio!");
+                }
+            } while (autor.isEmpty());
+
+            int ano;
+            while (true) {
+                System.out.print("Ano de publicação: ");
+                try {
+                    ano = Integer.parseInt(scanner.nextLine());
+                    if (ano <= 0 || ano > Calendar.getInstance().get(Calendar.YEAR) + 1) {
+                        System.out.println("Ano inválido!");
+                    } else {
+                        break;
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("Digite um ano válido!");
+                }
+            }
+
+            String genero;
+            do {
+                System.out.print("Gênero: ");
+                genero = scanner.nextLine().trim();
+                if (genero.isEmpty()) {
+                    System.out.println("Gênero não pode ser vazio!");
+                }
+            } while (genero.isEmpty());
+
+            // Confirmar cadastro
+            System.out.println("\nDados do livro:");
+            System.out.println("Título: " + titulo);
+            System.out.println("Autor: " + autor);
+            System.out.println("Ano: " + ano);
+            System.out.println("Gênero: " + genero);
+
+            if (confirmarOperacao("Confirmar cadastro")) {
+                System.out.println("Cadastro cancelado.");
+                return;
+            }
+
+            // Inserir no banco
+            try (Connection conn = ConexaoMySQL.getConexao();
+                 PreparedStatement stmt = conn.prepareStatement(
+                         "INSERT INTO Livro (Titulo, Autor, Ano, Genero, Status) VALUES (?, ?, ?, ?, 'Disponível')")) {
+
+                stmt.setString(1, titulo);
+                stmt.setString(2, autor);
+                stmt.setInt(3, ano);
+                stmt.setString(4, genero);
+
+                int linhasAfetadas = stmt.executeUpdate();
+
+                if (linhasAfetadas > 0) {
+                    System.out.println("Livro cadastrado com sucesso!");
+                } else {
+                    System.out.println("Falha ao cadastrar livro.");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro no banco de dados: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Erro inesperado: " + e.getMessage());
+        } finally {
+            pausar();
+        }
+    }
+
+    public static void editarLivro() {
+        try {
+            System.out.println("\n=== EDITAR LIVRO ===");
+
+            // Listar livros para seleção
+            listarLivros();
+
+            // Solicitar ID do livro
+            System.out.print("\nDigite o ID do livro a editar: ");
+            int idLivro = Integer.parseInt(scanner.nextLine());
+
+            // Verificar se livro existe
+            if (livroExiste(idLivro)) {
+                System.out.println("Livro não encontrado!");
+                return;
+            }
+
+            // Mostrar dados atuais
+            Livro livro = buscarLivro(idLivro);
+            if (livro == null) {
+                System.out.println("Erro ao buscar dados do livro.");
+                return;
+            }
+
+            System.out.println("\nDados atuais:");
+            System.out.println("1. Título: " + livro.getTitulo());
+            System.out.println("2. Autor: " + livro.getAutor());
+            System.out.println("3. Ano: " + livro.getAno());
+            System.out.println("4. Gênero: " + livro.getGenero());
+            System.out.println("5. Status: " + livro.getStatus());
+
+            // Menu de edição
+            System.out.println("\nO que deseja editar?");
+            System.out.println("1. Título");
+            System.out.println("2. Autor");
+            System.out.println("3. Ano");
+            System.out.println("4. Gênero");
+            System.out.println("5. Status");
+            System.out.println("0. Cancelar");
+            System.out.print("Escolha: ");
+
+            int opcao = Integer.parseInt(scanner.nextLine());
+
+            String campo ;
+            Object novoValor ;
+
+            switch (opcao) {
+                case 1:
+                    System.out.print("Novo título: ");
+                    novoValor = scanner.nextLine().trim();
+                    campo = "Titulo";
+                    break;
+                case 2:
+                    System.out.print("Novo autor: ");
+                    novoValor = scanner.nextLine().trim();
+                    campo = "Autor";
+                    break;
+                case 3:
+                    int ano;
+                    while (true) {
+                        System.out.print("Novo ano: ");
+                        try {
+                            ano = Integer.parseInt(scanner.nextLine());
+                            if (ano <= 0 || ano > Calendar.getInstance().get(Calendar.YEAR) + 1) {
+                                System.out.println("Ano inválido!");
+                            } else {
+                                novoValor = ano;
+                                break;
+                            }
+                        } catch (NumberFormatException e) {
+                            System.out.println("Digite um ano válido!");
+                        }
+                    }
+                    campo = "Ano";
+                    break;
+                case 4:
+                    System.out.print("Novo gênero: ");
+                    novoValor = scanner.nextLine().trim();
+                    campo = "Genero";
+                    break;
+                case 5:
+                    System.out.println("Status disponíveis:");
+                    System.out.println("1. Disponível");
+                    System.out.println("2. Emprestado");
+                    System.out.println("3. Em manutenção");
+                    System.out.print("Escolha: ");
+                    int statusOpcao = Integer.parseInt(scanner.nextLine());
+
+                    switch (statusOpcao) {
+                        case 1: novoValor = "Disponível"; break;
+                        case 2: novoValor = "Emprestado"; break;
+                        case 3: novoValor = "Em manutenção"; break;
+                        default:
+                            System.out.println("Opção inválida.");
+                            return;
+                    }
+                    campo = "Status";
+                    break;
+                case 0:
+                    System.out.println("Edição cancelada.");
+                    return;
+                default:
+                    System.out.println("Opção inválida.");
+                    return;
+            }
+
+            if (confirmarOperacao("Confirmar alteração")) {
+                System.out.println("Edição cancelada.");
+                return;
+            }
+
+            // Atualizar no banco
+            try (Connection conn = ConexaoMySQL.getConexao();
+                 PreparedStatement stmt = conn.prepareStatement(
+                         "UPDATE Livro SET " + campo + " = ? WHERE ID = ?")) {
+
+                if (novoValor instanceof Integer) {
+                    stmt.setInt(1, (Integer) novoValor);
+                } else {
+                    stmt.setString(1, novoValor.toString());
+                }
+                stmt.setInt(2, idLivro);
+
+                int linhasAfetadas = stmt.executeUpdate();
+
+                if (linhasAfetadas > 0) {
+                    System.out.println("Livro atualizado com sucesso!");
+                } else {
+                    System.out.println("Falha ao atualizar livro.");
+                }
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Entrada inválida. Digite um número.");
+        } catch (SQLException e) {
+            System.err.println("Erro no banco de dados: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Erro inesperado: " + e.getMessage());
+        } finally {
+            pausar();
+        }
+    }
+
+    public static void excluirLivro() {
+        try {
+            System.out.println("\n=== EXCLUIR LIVRO ===");
+
+            // Listar livros para seleção
+            listarLivros();
+
+            // Solicitar ID do livro
+            System.out.print("\nDigite o ID do livro a excluir: ");
+            int idLivro = Integer.parseInt(scanner.nextLine());
+
+            // Verificar se livro existe
+            if (livroExiste(idLivro)) {
+                System.out.println("Livro não encontrado!");
+                return;
+            }
+
+            // Mostrar dados do livro
+            Livro livro = buscarLivro(idLivro);
+            if (livro != null) {
+                System.out.println("\nDados do livro:");
+                System.out.println("ID: " + livro.getId());
+                System.out.println("Título: " + livro.getTitulo());
+                System.out.println("Autor: " + livro.getAutor());
+                System.out.println("Status: " + livro.getStatus());
+            }
+
+            if (confirmarOperacao("Tem certeza que deseja excluir este livro?")) {
+                System.out.println("Exclusão cancelada.");
+                return;
+            }
+
+            // Verificar se o livro está emprestado
+            assert livro != null;
+            if (livro.getStatus().equals("Emprestado")) {
+                System.out.println("Não é possível excluir um livro emprestado!");
+                return;
+            }
+
+            // Excluir livro
+            try (Connection conn = ConexaoMySQL.getConexao();
+                 PreparedStatement stmt = conn.prepareStatement(
+                         "DELETE FROM Livro WHERE ID = ?")) {
+
+                stmt.setInt(1, idLivro);
+                int linhas = stmt.executeUpdate();
+
+                if (linhas > 0) {
+                    System.out.println("Livro excluído com sucesso!");
+                } else {
+                    System.out.println("Falha ao excluir livro.");
+                }
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("ID deve ser um número!");
+        } catch (SQLException e) {
+            System.err.println("Erro no banco de dados: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Erro inesperado: " + e.getMessage());
+        } finally {
+            pausar();
+        }
+    }
+
+    public static void listarLivros() {
+        try {
+            System.out.println("\n=== LISTA DE LIVROS ===");
+
+            try (Connection conn = ConexaoMySQL.getConexao();
+                 Statement stmt = conn.createStatement();
+                 ResultSet rs = stmt.executeQuery(
+                         "SELECT ID, Titulo, Autor, Ano, Genero, Status FROM Livro ORDER BY ID")) {
+
+                boolean encontrou = false;
+                while (rs.next()) {
+                    encontrou = true;
+                    System.out.println("\nID: " + rs.getInt("ID"));
+                    System.out.println("Título: " + rs.getString("Titulo"));
+                    System.out.println("Autor: " + rs.getString("Autor"));
+                    System.out.println("Ano: " + rs.getInt("Ano"));
+                    System.out.println("Gênero: " + rs.getString("Genero"));
+                    System.out.println("Status: " + rs.getString("Status"));
+                    System.out.println("   ");
+                    System.out.println("---");
+                }
+
+                if (!encontrou) {
+                    System.out.println("Nenhum livro cadastrado.");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar livros: " + e.getMessage());
+        } finally {
+            pausar();
+        }
+    }
+
+    public static void listarLivrosDisponiveis() {
+        try {
+            System.out.println("\n=== LIVROS DISPONÍVEIS ===");
+
+            try (Connection conn = ConexaoMySQL.getConexao();
+                 PreparedStatement stmt = conn.prepareStatement(
+                         "SELECT ID, Titulo, Autor, Ano, Genero FROM Livro WHERE Status = 'Disponível' ORDER BY ID");
+                 ResultSet rs = stmt.executeQuery()) {
+
+                boolean encontrou = false;
+                while (rs.next()) {
+                    encontrou = true;
+                    System.out.println("\nID: " + rs.getInt("ID"));
+                    System.out.println("Título: " + rs.getString("Titulo"));
+                    System.out.println("Autor: " + rs.getString("Autor"));
+                    System.out.println("Ano: " + rs.getInt("Ano"));
+                    System.out.println("Gênero: " + rs.getString("Genero"));
+                    System.out.println("   ");
+                    System.out.println("---");
+                }
+
+                if (!encontrou) {
+                    System.out.println("Nenhum livro disponível no momento.");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar livros: " + e.getMessage());
+        } finally {
+            pausar();
+        }
+    }
 
 }
