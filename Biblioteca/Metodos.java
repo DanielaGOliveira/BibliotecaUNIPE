@@ -721,4 +721,236 @@ public class Metodos {
         }
     }
 
+        // MÉTODOS PARA EMPRÉSTIMOS
+
+    /**
+     * Realiza o processo de empréstimo de um livro a um aluno.
+     * 
+     * Este método:
+     * - Lista livros disponíveis;
+     * - Solicita o RGM do aluno e valida sua existência;
+     * - Solicita o ID do livro e valida sua disponibilidade;
+     * - Confirma a operação com o usuário;
+     * - Registra o empréstimo no banco de dados, se confirmado.
+     * 
+     * Em caso de erro, exibe mensagens apropriadas.
+     */
+    public static void fazerEmprestimo() {
+        try {
+            System.out.println("\n=== NOVO EMPRÉSTIMO ===");
+
+            listarLivrosDisponiveis();
+            List<Integer> idsDisponiveis = obterIdsLivrosDisponiveis();
+            if (idsDisponiveis.isEmpty()) {
+                System.out.println("Não há livros disponíveis para empréstimo.");
+                return;
+            }
+
+            System.out.print("\nDigite o RGM do aluno: ");
+            int rgm = Integer.parseInt(scanner.nextLine());
+
+            if (!alunoExiste(rgm)) {
+                System.out.println("Aluno não encontrado!");
+                return;
+            }
+
+            System.out.print("Digite o ID do livro que deseja emprestar: ");
+            int idLivro = Integer.parseInt(scanner.nextLine());
+
+            if (!idsDisponiveis.contains(idLivro)) {
+                System.out.println("Livro não disponível ou ID inválido!");
+                return;
+            }
+
+            Livro livro = buscarLivro(idLivro);
+            if (livro == null) {
+                System.out.println("Erro ao buscar informações do livro.");
+                return;
+            }
+
+            System.out.println("\nConfirmar empréstimo:");
+            System.out.println("Aluno RGM: " + rgm);
+            System.out.println("Livro: " + livro.getTitulo());
+
+            if (confirmarOperacao("Confirmar empréstimo")) {
+                System.out.println("Empréstimo cancelado.");
+                return;
+            }
+
+            boolean sucesso = registrarEmprestimo(rgm, idLivro);
+
+            if (sucesso) {
+                System.out.println("\nEmpréstimo realizado com sucesso!");
+                System.out.println("Livro: " + livro.getTitulo());
+                System.out.println("Prazo de devolução: 7 dias");
+            } else {
+                System.out.println("Falha ao registrar empréstimo.");
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Por favor, digite um número válido.");
+        } catch (SQLException e) {
+            System.err.println("Erro no banco de dados: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Erro inesperado: " + e.getMessage());
+        } finally {
+            pausar();
+        }
+    }
+
+    /**
+     * Finaliza um empréstimo ativo e atualiza os dados no banco de dados.
+     * 
+     * Este método:
+     * - Lista os empréstimos ativos;
+     * - Solicita o ID do empréstimo e valida sua existência e status;
+     * - Exibe detalhes do empréstimo, aluno e livro envolvidos;
+     * - Confirma a finalização com o usuário;
+     * - Atualiza o status do empréstimo e do livro dentro de uma transação.
+     * 
+     * Detecta e alerta sobre devoluções atrasadas.
+     */
+    public static void finalizarEmprestimo() {
+        try {
+            System.out.println("\n=== FINALIZAR EMPRÉSTIMO ===");
+
+            listarEmprestimosAtivos();
+
+            System.out.print("\nDigite o ID do empréstimo para finalizar: ");
+            int idEmprestimo = Integer.parseInt(scanner.nextLine());
+
+            if (!emprestimoAtivoExiste(idEmprestimo)) {
+                System.out.println("Empréstimo não encontrado ou já finalizado!");
+                return;
+            }
+
+            Emprestimo emprestimo = buscarEmprestimo(idEmprestimo);
+            if (emprestimo == null) {
+                System.out.println("Erro ao buscar informações do empréstimo.");
+                return;
+            }
+
+            Livro livro = buscarLivro(emprestimo.getIdLivro());
+            Aluno aluno = buscarAluno(emprestimo.getRgmAluno());
+
+            System.out.println("\nDados do empréstimo:");
+            System.out.println("ID: " + emprestimo.getId());
+            assert aluno != null;
+            System.out.println("Aluno: " + aluno.getNome() + " (RGM: " + aluno.getRgm() + ")");
+            assert livro != null;
+            System.out.println("Livro: " + livro.getTitulo());
+            System.out.println("Data de retirada: " + emprestimo.getDataRetirada());
+            System.out.println("Data prevista de devolução: " + emprestimo.getDataDevolucao());
+
+            Date hoje = new Date();
+            if (hoje.after(emprestimo.getDataDevolucao())) {
+                System.out.println("ATENÇÃO: Empréstimo em atraso!");
+            }
+
+            if (confirmarOperacao("Confirmar finalização do empréstimo")) {
+                System.out.println("Operação cancelada.");
+                return;
+            }
+
+            Connection conn = null;
+            try {
+                conn = ConexaoMySQL.getConexao();
+                conn.setAutoCommit(false);
+
+                try (PreparedStatement stmtEmprestimo = conn.prepareStatement(
+                        "UPDATE Emprestimo SET Status = 'Concluído' WHERE ID = ?")) {
+                    stmtEmprestimo.setInt(1, idEmprestimo);
+                    stmtEmprestimo.executeUpdate();
+                }
+
+                try (PreparedStatement stmtLivro = conn.prepareStatement(
+                        "UPDATE Livro SET Status = 'Disponível' WHERE ID = ?")) {
+                    stmtLivro.setInt(1, emprestimo.getIdLivro());
+                    stmtLivro.executeUpdate();
+                }
+
+                conn.commit();
+                System.out.println("Empréstimo finalizado com sucesso!");
+
+            } catch (SQLException e) {
+                if (conn != null) {
+                    try {
+                        conn.rollback();
+                    } catch (SQLException ex) {
+                        System.err.println("Erro ao reverter transação: " + ex.getMessage());
+                    }
+                }
+                throw e;
+            } finally {
+                if (conn != null) {
+                    try {
+                        conn.setAutoCommit(true);
+                        conn.close();
+                    } catch (SQLException e) {
+                        System.err.println("Erro ao fechar conexão: " + e.getMessage());
+                    }
+                }
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("ID deve ser um número!");
+        } catch (SQLException e) {
+            System.err.println("Erro no banco de dados: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Erro inesperado: " + e.getMessage());
+        } finally {
+            pausar();
+        }
+    }
+
+    /**
+     * Lista todos os empréstimos ativos registrados no sistema.
+     * 
+     * Este método:
+     * - Consulta empréstimos com status "Ativo";
+     * - Exibe os dados de cada empréstimo: ID, aluno, livro, datas;
+     * - Indica se o empréstimo está atrasado.
+     * 
+     * Exibe uma mensagem informando se não houver empréstimos ativos.
+     */
+    public static void listarEmprestimosAtivos() {
+        try {
+            System.out.println("\n=== EMPRÉSTIMOS ATIVOS ===");
+
+            try (Connection conn = ConexaoMySQL.getConexao();
+                PreparedStatement stmt = conn.prepareStatement(
+                        "SELECT e.ID, c.RGM, c.Nome AS NomeAluno, l.ID AS IDLivro, l.Titulo, e.DataRetirada, e.DataDevolucao " +
+                                "FROM Emprestimo e " +
+                                "JOIN ClienteEmprestimo ce ON e.ID = ce.ID_Emprestimo " +
+                                "JOIN Cliente c ON ce.RGM_Cliente = c.RGM " +
+                                "JOIN EmprestimoLivro el ON e.ID = el.ID_Emprestimo " +
+                                "JOIN Livro l ON el.ID_Livro = l.ID " +
+                                "WHERE e.Status = 'Ativo' " +
+                                "ORDER BY e.DataDevolucao");
+                ResultSet rs = stmt.executeQuery()) {
+
+                boolean encontrou = false;
+                while (rs.next()) {
+                    encontrou = true;
+                    System.out.println("\nID Empréstimo: " + rs.getInt("ID"));
+                    System.out.println("Aluno: " + rs.getString("NomeAluno") + " (RGM: " + rs.getInt("RGM") + ")");
+                    System.out.println("Livro: " + rs.getString("Titulo") + " (ID: " + rs.getInt("IDLivro") + ")");
+                    System.out.println("Retirada: " + rs.getDate("DataRetirada"));
+                    System.out.println("Devolução: " + rs.getDate("DataDevolucao"));
+                    System.out.println("---");
+
+                    if (rs.getDate("DataDevolucao").before(new Date())) {
+                        System.out.println("ATRASADO!");
+                    }
+                }
+
+                if (!encontrou) {
+                    System.out.println("Nenhum empréstimo ativo no momento.");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar empréstimos: " + e.getMessage());
+        } finally {
+            pausar();
+        }
+    }
+
 }
