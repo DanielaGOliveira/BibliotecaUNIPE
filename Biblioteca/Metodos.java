@@ -893,16 +893,7 @@ public class Metodos {
         }
     }
 
-    /**
-     * Lista todos os empréstimos ativos registrados no sistema.
-     * 
-     * Este método:
-     * - Consulta empréstimos com status "Ativo";
-     * - Exibe os dados de cada empréstimo: ID, aluno, livro, datas;
-     * - Indica se o empréstimo está atrasado.
-     * 
-     * Exibe uma mensagem informando se não houver empréstimos ativos.
-     */
+     // Lista todos os empréstimos ativos registrados no sistema.
     public static void listarEmprestimosAtivos() {
         try {
             System.out.println("\n=== EMPRÉSTIMOS ATIVOS ===");
@@ -930,6 +921,7 @@ public class Metodos {
                     System.out.println("Devolução: " + rs.getDate("DataDevolucao"));
                     System.out.println("---");
 
+                    // Indica se o empréstimo está atrasado
                     if (rs.getDate("DataDevolucao").before(new Date())) {
                         System.out.println("ATRASADO!");
                     }
@@ -946,19 +938,13 @@ public class Metodos {
         }
     }
 
-    /**
-     * Lista todo o histórico de empréstimos registrados no sistema.
-     * 
-     * Este método:
-     * - Consulta todos os empréstimos, independentemente do status;
-     * - Exibe os dados de cada empréstimo: ID, aluno, livro, datas e status;
-     * - Ordena a lista pela data de retirada, da mais recente para a mais antiga;
-     * - Exibe uma mensagem caso não haja nenhum empréstimo registrado.
-     */
+    // Lista todo o histórico de empréstimos registrados no sistema.
     public static void listarHistoricoCompleto() {
         try {
             System.out.println("\n=== HISTÓRICO DE EMPRÉSTIMOS ===");
 
+            //Consulta todos os empréstimos, independentemente do status
+            //Ordena a lista pela data de retirada, da mais recente para a mais antiga;
             try (Connection conn = ConexaoMySQL.getConexao();
                 PreparedStatement stmt = conn.prepareStatement(
                         "SELECT e.ID, c.RGM, c.Nome AS NomeAluno, l.ID AS IDLivro, l.Titulo, e.DataRetirada, e.DataDevolucao, e.Status " +
@@ -971,6 +957,8 @@ public class Metodos {
                 ResultSet rs = stmt.executeQuery()) {
 
                 boolean encontrou = false;
+
+                //Exibe os dados de cada empréstimo: ID, aluno, livro, datas e status
                 while (rs.next()) {
                     encontrou = true;
                     System.out.println("\nID: " + rs.getInt("ID"));
@@ -993,16 +981,7 @@ public class Metodos {
         }
     }
 
-    /**
-     * Consulta e exibe o histórico de empréstimos de um aluno específico.
-     * 
-     * Este método:
-     * - Solicita o RGM do aluno para busca personalizada;
-     * - Verifica se o aluno existe no sistema;
-     * - Consulta todos os empréstimos do aluno, exibindo dados relevantes;
-     * - Ordena o histórico pela data de retirada, da mais recente para a mais antiga;
-     * - Exibe mensagem caso não haja empréstimos registrados para o aluno.
-     */
+    // Consulta e exibe o histórico de empréstimos de um aluno específico.
     public static void consultarHistoricoAluno() {
         try {
             System.out.println("\n=== HISTÓRICO DO ALUNO ===");
@@ -1032,6 +1011,8 @@ public class Metodos {
                 ResultSet rs = stmt.executeQuery();
 
                 boolean encontrou = false;
+
+                // Consulta todos os empréstimos do aluno, exibindo dados relevantes
                 while (rs.next()) {
                     encontrou = true;
                     System.out.println("\nID Empréstimo: " + rs.getInt("ID"));
@@ -1055,8 +1036,9 @@ public class Metodos {
         }
     }
 
+    // ================= CONSULTAS AVANÇADAS ================= //
 
-        // CONSULTAS AVANÇADAS
+    // Consulta livros por Gênero
     public static void consultarLivrosPorGenero() {
         try {
             System.out.println("\n=== LIVROS POR GÊNERO ===");
@@ -1106,6 +1088,7 @@ public class Metodos {
         }
     }
 
+    // Consulta livros por Autor
     public static void consultarLivrosPorAutor() {
         try {
             System.out.println("\n=== LIVROS POR AUTOR ===");
@@ -1155,10 +1138,12 @@ public class Metodos {
         }
     }
 
+    //Consulta Livros por Status
     public static void consultarLivrosPorStatus() {
         try {
             System.out.println("\n=== LIVROS POR STATUS ===");
 
+            //Seleciona o Status que quer consultar
             System.out.println("Status disponíveis:");
             System.out.println("1. Disponível");
             System.out.println("2. Emprestado");
@@ -1208,10 +1193,12 @@ public class Metodos {
         }
     }
 
+    // Consulta livros Atrasados
     public static void consultarAtrasados() {
         try {
             System.out.println("\n=== EMPRÉSTIMOS ATRASADOS ===");
 
+            // Seleciona livros atrasados por ordem de Data de devolução
             try (Connection conn = ConexaoMySQL.getConexao();
                  PreparedStatement stmt = conn.prepareStatement(
                          "SELECT e.ID, c.RGM, c.Nome AS NomeAluno, l.Titulo, e.DataRetirada, e.DataDevolucao " +
@@ -1251,7 +1238,9 @@ public class Metodos {
         }
     }
 
-        // MÉTODOS AUXILIARES
+    // ================= METODOS AUXILIARES ================= //
+
+    // Metodo para verificar se aluno existe pelo RGM
     public static boolean alunoExiste(int rgm) throws SQLException {
         try (Connection conn = ConexaoMySQL.getConexao();
              PreparedStatement stmt = conn.prepareStatement("SELECT 1 FROM Cliente WHERE RGM = ?")) {
@@ -1262,6 +1251,7 @@ public class Metodos {
         }
     }
 
+    // Metodo para buscar aluno pelo RGM, retornando nome, endereço e e-mail
     public static Aluno buscarAluno(int rgm) throws SQLException {
         try (Connection conn = ConexaoMySQL.getConexao();
              PreparedStatement stmt = conn.prepareStatement(
@@ -1278,6 +1268,7 @@ public class Metodos {
         }
     }
 
+    // Metodo para verificar se livro existe por ordem de ID
     public static boolean livroExiste(int idLivro) throws SQLException {
         try (Connection conn = ConexaoMySQL.getConexao();
              PreparedStatement stmt = conn.prepareStatement("SELECT 1 FROM Livro WHERE ID = ?")) {
@@ -1288,6 +1279,7 @@ public class Metodos {
         }
     }
 
+    // Metodo para buscar livro por ordem de ID, retornando Título, autor, ano, gênero e status
     public static Livro buscarLivro(int idLivro) throws SQLException {
         try (Connection conn = ConexaoMySQL.getConexao();
              PreparedStatement stmt = conn.prepareStatement(
@@ -1306,6 +1298,7 @@ public class Metodos {
         }
     }
 
+    // Metodo para verificar se Empréstimo existe, retornando por Status 'Ativo'
     public static boolean emprestimoAtivoExiste(int idEmprestimo) throws SQLException {
         try (Connection conn = ConexaoMySQL.getConexao();
              PreparedStatement stmt = conn.prepareStatement(
@@ -1317,6 +1310,7 @@ public class Metodos {
         }
     }
 
+    // Metodo para buscar empréstimo
     public static Emprestimo buscarEmprestimo(int idEmprestimo) throws SQLException {
         try (Connection conn = ConexaoMySQL.getConexao();
              PreparedStatement stmt = conn.prepareStatement(
@@ -1341,6 +1335,7 @@ public class Metodos {
         }
     }
 
+    // Metodo para obter Id de livros disponíveis
     public static List<Integer> obterIdsLivrosDisponiveis() throws SQLException {
         List<Integer> ids = new ArrayList<>();
         try (Connection conn = ConexaoMySQL.getConexao();
@@ -1354,6 +1349,7 @@ public class Metodos {
         return ids;
     }
 
+    // Metodo para registrar Empréstimo em Banco de dados
     public static boolean registrarEmprestimo(int rgm, int idLivro) throws SQLException {
         Connection conn = null;
         try {
@@ -1426,6 +1422,7 @@ public class Metodos {
         }
     }
 
+    // Excluir Relacionamentos de alunos no Banco de Dados
     public static void excluirRelacionamentosAluno(Connection conn, int rgm) throws SQLException {
         // Excluir de ClienteEmprestimo
         try (PreparedStatement stmt = conn.prepareStatement(
@@ -1442,16 +1439,19 @@ public class Metodos {
         }
     }
 
+    // Metodo para verificar se e-mail é valido
     public static boolean validarEmail(String email) {
         return emailPattern.matcher(email).matches();
     }
 
+    // Metodo para confirmar operação
     public static boolean confirmarOperacao(String mensagem) {
         System.out.print("\n" + mensagem + " (S/N)? ");
         String confirmacao = scanner.nextLine().trim().toUpperCase();
         return confirmacao.equals("S");
     }
 
+    // Metodo para pausar
     public static void pausar() {
         System.out.print("\nPressione Enter para continuar...");
         scanner.nextLine();
