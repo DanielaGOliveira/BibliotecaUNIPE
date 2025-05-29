@@ -946,6 +946,116 @@ public class Metodos {
         }
     }
 
+    /**
+     * Lista todo o histórico de empréstimos registrados no sistema.
+     * 
+     * Este método:
+     * - Consulta todos os empréstimos, independentemente do status;
+     * - Exibe os dados de cada empréstimo: ID, aluno, livro, datas e status;
+     * - Ordena a lista pela data de retirada, da mais recente para a mais antiga;
+     * - Exibe uma mensagem caso não haja nenhum empréstimo registrado.
+     */
+    public static void listarHistoricoCompleto() {
+        try {
+            System.out.println("\n=== HISTÓRICO DE EMPRÉSTIMOS ===");
+
+            try (Connection conn = ConexaoMySQL.getConexao();
+                PreparedStatement stmt = conn.prepareStatement(
+                        "SELECT e.ID, c.RGM, c.Nome AS NomeAluno, l.ID AS IDLivro, l.Titulo, e.DataRetirada, e.DataDevolucao, e.Status " +
+                        "FROM Emprestimo e " +
+                        "JOIN ClienteEmprestimo ce ON e.ID = ce.ID_Emprestimo " +
+                        "JOIN Cliente c ON ce.RGM_Cliente = c.RGM " +
+                        "JOIN EmprestimoLivro el ON e.ID = el.ID_Emprestimo " +
+                        "JOIN Livro l ON el.ID_Livro = l.ID " +
+                        "ORDER BY e.DataRetirada DESC");
+                ResultSet rs = stmt.executeQuery()) {
+
+                boolean encontrou = false;
+                while (rs.next()) {
+                    encontrou = true;
+                    System.out.println("\nID: " + rs.getInt("ID"));
+                    System.out.println("Aluno: " + rs.getString("NomeAluno") + " (RGM: " + rs.getInt("RGM") + ")");
+                    System.out.println("Livro: " + rs.getString("Titulo") + " (ID: " + rs.getInt("IDLivro") + ")");
+                    System.out.println("Retirada: " + rs.getDate("DataRetirada"));
+                    System.out.println("Devolução: " + rs.getDate("DataDevolucao"));
+                    System.out.println("Status: " + rs.getString("Status"));
+                    System.out.println("---");
+                }
+
+                if (!encontrou) {
+                    System.out.println("Nenhum empréstimo registrado.");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar histórico: " + e.getMessage());
+        } finally {
+            pausar();
+        }
+    }
+
+    /**
+     * Consulta e exibe o histórico de empréstimos de um aluno específico.
+     * 
+     * Este método:
+     * - Solicita o RGM do aluno para busca personalizada;
+     * - Verifica se o aluno existe no sistema;
+     * - Consulta todos os empréstimos do aluno, exibindo dados relevantes;
+     * - Ordena o histórico pela data de retirada, da mais recente para a mais antiga;
+     * - Exibe mensagem caso não haja empréstimos registrados para o aluno.
+     */
+    public static void consultarHistoricoAluno() {
+        try {
+            System.out.println("\n=== HISTÓRICO DO ALUNO ===");
+
+            // Solicitar RGM do aluno
+            System.out.print("Digite seu RGM: ");
+            int rgm = Integer.parseInt(scanner.nextLine());
+
+            // Verificar se aluno existe
+            if (!alunoExiste(rgm)) {
+                System.out.println("Aluno não encontrado!");
+                return;
+            }
+
+            // Buscar histórico
+            try (Connection conn = ConexaoMySQL.getConexao();
+                PreparedStatement stmt = conn.prepareStatement(
+                        "SELECT e.ID, l.Titulo, e.DataRetirada, e.DataDevolucao, e.Status " +
+                        "FROM Emprestimo e " +
+                        "JOIN ClienteEmprestimo ce ON e.ID = ce.ID_Emprestimo " +
+                        "JOIN EmprestimoLivro el ON e.ID = el.ID_Emprestimo " +
+                        "JOIN Livro l ON el.ID_Livro = l.ID " +
+                        "WHERE ce.RGM_Cliente = ? " +
+                        "ORDER BY e.DataRetirada DESC")) {
+
+                stmt.setInt(1, rgm);
+                ResultSet rs = stmt.executeQuery();
+
+                boolean encontrou = false;
+                while (rs.next()) {
+                    encontrou = true;
+                    System.out.println("\nID Empréstimo: " + rs.getInt("ID"));
+                    System.out.println("Livro: " + rs.getString("Titulo"));
+                    System.out.println("Retirada: " + rs.getDate("DataRetirada"));
+                    System.out.println("Devolução: " + rs.getDate("DataDevolucao"));
+                    System.out.println("Status: " + rs.getString("Status"));
+                    System.out.println("---");
+                }
+
+                if (!encontrou) {
+                    System.out.println("Nenhum empréstimo registrado para este aluno.");
+                }
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("RGM deve ser um número!");
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar histórico: " + e.getMessage());
+        } finally {
+            pausar();
+        }
+    }
+
+
         // CONSULTAS AVANÇADAS
     public static void consultarLivrosPorGenero() {
         try {
