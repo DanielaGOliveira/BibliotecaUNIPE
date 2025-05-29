@@ -18,10 +18,8 @@ public class Metodos {
 
     // ================= MÉTODOS PARA ALUNOS ================= //
 
-    /**
-     * Cadastra um novo aluno.
-     * Solicita os dados via terminal, valida e persiste no banco de dados.
-     */
+    // Cadastra um novo aluno.
+    // Solicita os dados via terminal, valida e persiste no banco de dados.
     public static void cadastrarAluno() {
         try {
             System.out.println("\n=== CADASTRO DE ALUNO ===");
@@ -80,10 +78,10 @@ public class Metodos {
                 email = scanner.nextLine().trim();
 
                 // Chama o método validarEmail que usa regex para checar o formato
-                if (validarEmail(email)) {
+                if (!validarEmail(email)) {
                     System.out.println("E-mail inválido!");
                 }
-            } while (validarEmail(email)); // repete enquanto o email for inválido
+            } while (!validarEmail(email)); // repete enquanto o email for inválido
 
             // Exibe os dados informados para o usuário conferir antes de salvar
             System.out.println("\nDados do aluno:");
@@ -93,7 +91,7 @@ public class Metodos {
             System.out.println("E-mail: " + email);
 
             // Pede confirmação para salvar o aluno no banco
-            if (confirmarOperacao("Confirmar cadastro")) {
+            if (!confirmarOperacao("Confirmar cadastro")) {
                 System.out.println("Cadastro cancelado.");
                 return; // cancela se usuário não confirmar
             }
@@ -126,10 +124,8 @@ public class Metodos {
         }
     }
 
-    /**
-     * Permite editar dados de um aluno.
-     * O usuário escolhe qual campo deseja alterar.
-     */
+    // Permite editar dados de um aluno.
+    // O usuário escolhe qual campo deseja alterar.
     public static void editarAluno() {
         try {
             System.out.println("\n=== EDITAR ALUNO ===");
@@ -187,7 +183,7 @@ public class Metodos {
                     do {
                         System.out.print("Novo e-mail: ");
                         novoValor = scanner.nextLine().trim();
-                        if (validarEmail(novoValor)) {
+                        if (!validarEmail(novoValor)) {
                             System.out.println("E-mail inválido!");
                             novoValor = "";
                         }
@@ -203,7 +199,7 @@ public class Metodos {
             }
 
             // Confirma alteração com o usuário antes de atualizar no banco
-            if (confirmarOperacao("Confirmar alteração")) {
+            if (!confirmarOperacao("Confirmar alteração")) {
                 System.out.println("Edição cancelada.");
                 return;
             }
@@ -235,9 +231,7 @@ public class Metodos {
         }
     }
 
-    /**
-     * Exclui um aluno e seus relacionamentos do banco de dados.
-     */
+    // Exclui um aluno e seus relacionamentos do banco de dados.
     public static void excluirAluno() {
         try {
             System.out.println("\n=== EXCLUIR ALUNO ===");
@@ -262,7 +256,7 @@ public class Metodos {
             }
 
             // Solicita confirmação do usuário para excluir
-            if (confirmarOperacao("Tem certeza que deseja excluir este aluno?")) {
+            if (!confirmarOperacao("Tem certeza que deseja excluir este aluno?")) {
                 System.out.println("Exclusão cancelada.");
                 return;
             }
@@ -327,10 +321,8 @@ public class Metodos {
         }
     }
 
-    /**
-     * Lista todos os alunos cadastrados.
-     * Mostra RGM, nome e e-mail, ordenados por nome.
-     */
+    // Lista todos os alunos cadastrados.
+    // Mostra RGM, nome e e-mail, ordenados por nome.
     public static void listarAlunos() {
         try {
             System.out.println("\n=== LISTA DE ALUNOS ===");
@@ -363,7 +355,11 @@ public class Metodos {
             pausar(); // Pausa para o usuário ver a lista antes de continuar
         }
     }
- // MÉTODOS PARA LIVROS
+
+// ================= MÉTODOS PARA LIVROS ================= //
+
+    // Cadastra um novo livro
+    // Solicita os dados via terminal, valida e persiste no banco de dados.
     public static void cadastrarLivro() {
         try {
             System.out.println("\n=== CADASTRO DE LIVRO ===");
@@ -418,7 +414,7 @@ public class Metodos {
             System.out.println("Ano: " + ano);
             System.out.println("Gênero: " + genero);
 
-            if (confirmarOperacao("Confirmar cadastro")) {
+            if (!confirmarOperacao("Confirmar cadastro")) {
                 System.out.println("Cadastro cancelado.");
                 return;
             }
@@ -450,6 +446,8 @@ public class Metodos {
         }
     }
 
+    // Permite editar dados de um livro.
+    // O usuário escolhe qual campo deseja alterar.
     public static void editarLivro() {
         try {
             System.out.println("\n=== EDITAR LIVRO ===");
@@ -462,7 +460,7 @@ public class Metodos {
             int idLivro = Integer.parseInt(scanner.nextLine());
 
             // Verificar se livro existe
-            if (livroExiste(idLivro)) {
+            if (!livroExiste(idLivro)) {
                 System.out.println("Livro não encontrado!");
                 return;
             }
@@ -556,7 +554,7 @@ public class Metodos {
                     return;
             }
 
-            if (confirmarOperacao("Confirmar alteração")) {
+            if (!confirmarOperacao("Confirmar alteração")) {
                 System.out.println("Edição cancelada.");
                 return;
             }
@@ -592,6 +590,7 @@ public class Metodos {
         }
     }
 
+    // Exclui um livro
     public static void excluirLivro() {
         try {
             System.out.println("\n=== EXCLUIR LIVRO ===");
@@ -604,7 +603,7 @@ public class Metodos {
             int idLivro = Integer.parseInt(scanner.nextLine());
 
             // Verificar se livro existe
-            if (livroExiste(idLivro)) {
+            if (!livroExiste(idLivro)) {
                 System.out.println("Livro não encontrado!");
                 return;
             }
@@ -619,7 +618,7 @@ public class Metodos {
                 System.out.println("Status: " + livro.getStatus());
             }
 
-            if (confirmarOperacao("Tem certeza que deseja excluir este livro?")) {
+            if (!confirmarOperacao("Tem certeza que deseja excluir este livro?")) {
                 System.out.println("Exclusão cancelada.");
                 return;
             }
@@ -656,6 +655,8 @@ public class Metodos {
         }
     }
 
+    // Lista todos os livros cadastrados.
+    // Mostra ID, título, autor, ano, gênero e status, ordenados por ID.
     public static void listarLivros() {
         try {
             System.out.println("\n=== LISTA DE LIVROS ===");
@@ -689,6 +690,8 @@ public class Metodos {
         }
     }
 
+    // Listo todos os livros que estão disponíveis
+    // Mostra ID, título, autor, ano, gênero e status, ordenados por ID.
     public static void listarLivrosDisponiveis() {
         try {
             System.out.println("\n=== LIVROS DISPONÍVEIS ===");
@@ -721,24 +724,14 @@ public class Metodos {
         }
     }
 
-        // MÉTODOS PARA EMPRÉSTIMOS
+// ================= MÉTODOS PARA EMPRESTIMOS ================= //
 
-    /**
-     * Realiza o processo de empréstimo de um livro a um aluno.
-     * 
-     * Este método:
-     * - Lista livros disponíveis;
-     * - Solicita o RGM do aluno e valida sua existência;
-     * - Solicita o ID do livro e valida sua disponibilidade;
-     * - Confirma a operação com o usuário;
-     * - Registra o empréstimo no banco de dados, se confirmado.
-     * 
-     * Em caso de erro, exibe mensagens apropriadas.
-     */
+    // Realiza o processo de empréstimo de um livro a um aluno.
     public static void fazerEmprestimo() {
         try {
             System.out.println("\n=== NOVO EMPRÉSTIMO ===");
 
+            // Lista livros disponíveis
             listarLivrosDisponiveis();
             List<Integer> idsDisponiveis = obterIdsLivrosDisponiveis();
             if (idsDisponiveis.isEmpty()) {
@@ -746,6 +739,7 @@ public class Metodos {
                 return;
             }
 
+            // Solicita o RGM do aluno e valida sua existência
             System.out.print("\nDigite o RGM do aluno: ");
             int rgm = Integer.parseInt(scanner.nextLine());
 
@@ -754,6 +748,7 @@ public class Metodos {
                 return;
             }
 
+            // Solicita o ID do livro e valida sua disponibilidade
             System.out.print("Digite o ID do livro que deseja emprestar: ");
             int idLivro = Integer.parseInt(scanner.nextLine());
 
@@ -768,15 +763,17 @@ public class Metodos {
                 return;
             }
 
+            // Confirmação do empréstimo
             System.out.println("\nConfirmar empréstimo:");
             System.out.println("Aluno RGM: " + rgm);
             System.out.println("Livro: " + livro.getTitulo());
 
-            if (confirmarOperacao("Confirmar empréstimo")) {
+            if (!confirmarOperacao("Confirmar empréstimo")) {
                 System.out.println("Empréstimo cancelado.");
                 return;
             }
 
+            // Regristra o Empréstimo no sistema
             boolean sucesso = registrarEmprestimo(rgm, idLivro);
 
             if (sucesso) {
@@ -797,24 +794,15 @@ public class Metodos {
         }
     }
 
-    /**
-     * Finaliza um empréstimo ativo e atualiza os dados no banco de dados.
-     * 
-     * Este método:
-     * - Lista os empréstimos ativos;
-     * - Solicita o ID do empréstimo e valida sua existência e status;
-     * - Exibe detalhes do empréstimo, aluno e livro envolvidos;
-     * - Confirma a finalização com o usuário;
-     * - Atualiza o status do empréstimo e do livro dentro de uma transação.
-     * 
-     * Detecta e alerta sobre devoluções atrasadas.
-     */
+    // Finaliza um empréstimo ativo e atualiza os dados no banco de dados.
     public static void finalizarEmprestimo() {
         try {
             System.out.println("\n=== FINALIZAR EMPRÉSTIMO ===");
 
+            // Lista os empréstimos ativos
             listarEmprestimosAtivos();
 
+            // Solicita o ID do empréstimo e valida sua existência e status
             System.out.print("\nDigite o ID do empréstimo para finalizar: ");
             int idEmprestimo = Integer.parseInt(scanner.nextLine());
 
@@ -832,6 +820,7 @@ public class Metodos {
             Livro livro = buscarLivro(emprestimo.getIdLivro());
             Aluno aluno = buscarAluno(emprestimo.getRgmAluno());
 
+            // Exibe detalhes do empréstimo, aluno e livro envolvidos
             System.out.println("\nDados do empréstimo:");
             System.out.println("ID: " + emprestimo.getId());
             assert aluno != null;
@@ -841,16 +830,19 @@ public class Metodos {
             System.out.println("Data de retirada: " + emprestimo.getDataRetirada());
             System.out.println("Data prevista de devolução: " + emprestimo.getDataDevolucao());
 
+            // Verifica se o empréstimo está atradaso em relação com a Data de devolução
             Date hoje = new Date();
             if (hoje.after(emprestimo.getDataDevolucao())) {
                 System.out.println("ATENÇÃO: Empréstimo em atraso!");
             }
 
-            if (confirmarOperacao("Confirmar finalização do empréstimo")) {
+            // Confirma a finalização com o usuário
+            if (!confirmarOperacao("Confirmar finalização do empréstimo")) {
                 System.out.println("Operação cancelada.");
                 return;
             }
 
+            // Atualiza o status do empréstimo e do livro dentro do BD
             Connection conn = null;
             try {
                 conn = ConexaoMySQL.getConexao();
@@ -915,6 +907,7 @@ public class Metodos {
         try {
             System.out.println("\n=== EMPRÉSTIMOS ATIVOS ===");
 
+            // Consulta empréstimos com status "Ativo"
             try (Connection conn = ConexaoMySQL.getConexao();
                 PreparedStatement stmt = conn.prepareStatement(
                         "SELECT e.ID, c.RGM, c.Nome AS NomeAluno, l.ID AS IDLivro, l.Titulo, e.DataRetirada, e.DataDevolucao " +
@@ -929,7 +922,7 @@ public class Metodos {
 
                 boolean encontrou = false;
                 while (rs.next()) {
-                    encontrou = true;
+                    encontrou = true; // Exibe os dados de cada empréstimo: ID, aluno, livro, datas
                     System.out.println("\nID Empréstimo: " + rs.getInt("ID"));
                     System.out.println("Aluno: " + rs.getString("NomeAluno") + " (RGM: " + rs.getInt("RGM") + ")");
                     System.out.println("Livro: " + rs.getString("Titulo") + " (ID: " + rs.getInt("IDLivro") + ")");
@@ -1146,6 +1139,212 @@ public class Metodos {
         } finally {
             pausar();
         }
+    }
+
+        // MÉTODOS AUXILIARES
+    public static boolean alunoExiste(int rgm) throws SQLException {
+        try (Connection conn = ConexaoMySQL.getConexao();
+             PreparedStatement stmt = conn.prepareStatement("SELECT 1 FROM Cliente WHERE RGM = ?")) {
+            stmt.setInt(1, rgm);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    public static Aluno buscarAluno(int rgm) throws SQLException {
+        try (Connection conn = ConexaoMySQL.getConexao();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "SELECT Nome, Endereco, Email FROM Cliente WHERE RGM = ?")) {
+            stmt.setInt(1, rgm);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new Aluno(rgm, rs.getString("Nome"),
+                            rs.getString("Endereco"),
+                            rs.getString("Email"));
+                }
+                return null;
+            }
+        }
+    }
+
+    public static boolean livroExiste(int idLivro) throws SQLException {
+        try (Connection conn = ConexaoMySQL.getConexao();
+             PreparedStatement stmt = conn.prepareStatement("SELECT 1 FROM Livro WHERE ID = ?")) {
+            stmt.setInt(1, idLivro);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    public static Livro buscarLivro(int idLivro) throws SQLException {
+        try (Connection conn = ConexaoMySQL.getConexao();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "SELECT Titulo, Autor, Ano, Genero, Status FROM Livro WHERE ID = ?")) {
+            stmt.setInt(1, idLivro);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new Livro(idLivro, rs.getString("Titulo"),
+                            rs.getString("Autor"),
+                            rs.getInt("Ano"),
+                            rs.getString("Genero"),
+                            rs.getString("Status"));
+                }
+                return null;
+            }
+        }
+    }
+
+    public static boolean emprestimoAtivoExiste(int idEmprestimo) throws SQLException {
+        try (Connection conn = ConexaoMySQL.getConexao();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "SELECT 1 FROM Emprestimo WHERE ID = ? AND Status = 'Ativo'")) {
+            stmt.setInt(1, idEmprestimo);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    public static Emprestimo buscarEmprestimo(int idEmprestimo) throws SQLException {
+        try (Connection conn = ConexaoMySQL.getConexao();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "SELECT e.DataRetirada, e.DataDevolucao, e.Status, " +
+                             "ce.RGM_Cliente, el.ID_Livro " +
+                             "FROM Emprestimo e " +
+                             "JOIN ClienteEmprestimo ce ON e.ID = ce.ID_Emprestimo " +
+                             "JOIN EmprestimoLivro el ON e.ID = el.ID_Emprestimo " +
+                             "WHERE e.ID = ?")) {
+            stmt.setInt(1, idEmprestimo);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new Emprestimo(idEmprestimo,
+                            rs.getInt("RGM_Cliente"),
+                            rs.getInt("ID_Livro"),
+                            rs.getDate("DataRetirada"),
+                            rs.getDate("DataDevolucao"),
+                            rs.getString("Status"));
+                }
+                return null;
+            }
+        }
+    }
+
+    public static List<Integer> obterIdsLivrosDisponiveis() throws SQLException {
+        List<Integer> ids = new ArrayList<>();
+        try (Connection conn = ConexaoMySQL.getConexao();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "SELECT ID FROM Livro WHERE Status = 'Disponível'");
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                ids.add(rs.getInt("ID"));
+            }
+        }
+        return ids;
+    }
+
+    public static boolean registrarEmprestimo(int rgm, int idLivro) throws SQLException {
+        Connection conn = null;
+        try {
+            conn = ConexaoMySQL.getConexao();
+            conn.setAutoCommit(false);
+
+            // 1. Inserir o empréstimo
+            try (PreparedStatement stmtEmprestimo = conn.prepareStatement(
+                    "INSERT INTO Emprestimo (Status, DataRetirada, DataDevolucao) " +
+                            "VALUES ('Ativo', CURDATE(), DATE_ADD(CURDATE(), INTERVAL 7 DAY))",
+                    PreparedStatement.RETURN_GENERATED_KEYS)) {
+
+                stmtEmprestimo.executeUpdate();
+
+                // 2. Obter o ID do empréstimo criado
+                int idEmprestimo;
+                try (ResultSet rs = stmtEmprestimo.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        idEmprestimo = rs.getInt(1);
+                    } else {
+                        throw new SQLException("Falha ao obter ID do empréstimo");
+                    }
+                }
+
+                // 3. Registrar relação Cliente-Empréstimo
+                try (PreparedStatement stmtClienteEmprestimo = conn.prepareStatement(
+                        "INSERT INTO ClienteEmprestimo (RGM_Cliente, ID_Emprestimo) VALUES (?, ?)")) {
+                    stmtClienteEmprestimo.setInt(1, rgm);
+                    stmtClienteEmprestimo.setInt(2, idEmprestimo);
+                    stmtClienteEmprestimo.executeUpdate();
+                }
+
+                // 4. Registrar relação Empréstimo-Livro
+                try (PreparedStatement stmtEmprestimoLivro = conn.prepareStatement(
+                        "INSERT INTO EmprestimoLivro (ID_Livro, ID_Emprestimo) VALUES (?, ?)")) {
+                    stmtEmprestimoLivro.setInt(1, idLivro);
+                    stmtEmprestimoLivro.setInt(2, idEmprestimo);
+                    stmtEmprestimoLivro.executeUpdate();
+                }
+
+                // 5. Atualizar status do livro
+                try (PreparedStatement stmtAtualizarLivro = conn.prepareStatement(
+                        "UPDATE Livro SET Status = 'Emprestado' WHERE ID = ?")) {
+                    stmtAtualizarLivro.setInt(1, idLivro);
+                    stmtAtualizarLivro.executeUpdate();
+                }
+            }
+
+            conn.commit();
+            return true;
+
+        } catch (SQLException e) {
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    System.err.println("Erro ao reverter transação: " + ex.getMessage());
+                }
+            }
+            throw e;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException e) {
+                    System.err.println("Erro ao fechar conexão: " + e.getMessage());
+                }
+            }
+        }
+    }
+
+    public static void excluirRelacionamentosAluno(Connection conn, int rgm) throws SQLException {
+        // Excluir de ClienteEmprestimo
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "DELETE FROM ClienteEmprestimo WHERE RGM_Cliente = ?")) {
+            stmt.setInt(1, rgm);
+            stmt.executeUpdate();
+        }
+
+        // Excluir de SupervisaoCliente (se existir)
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "DELETE FROM SupervisaoCliente WHERE RGM_Cliente = ?")) {
+            stmt.setInt(1, rgm);
+            stmt.executeUpdate();
+        }
+    }
+
+    public static boolean validarEmail(String email) {
+        return emailPattern.matcher(email).matches();
+    }
+
+    public static boolean confirmarOperacao(String mensagem) {
+        System.out.print("\n" + mensagem + " (S/N)? ");
+        String confirmacao = scanner.nextLine().trim().toUpperCase();
+        return confirmacao.equals("S");
+    }
+
+    public static void pausar() {
+        System.out.print("\nPressione Enter para continuar...");
+        scanner.nextLine();
     }
 
 }
