@@ -29,19 +29,19 @@ Este projeto é um sistema de gerenciamento de biblioteca desenvolvido em Java, 
 
 ## Configuração do Banco de Dados
 1. Execute o script BDbiblioteca.sql no MySQL para criar o banco de dados e as tabelas necessárias.
-2. Configure as credenciais de acesso no arquivo ConexaoMySQL.java:
-   java
-   private static final String URL = "jdbc:mysql://localhost:3306/BDbiblioteca";
-   private static final String USER = "root"; // substitua pelo seu usuário
+2. Configure as credenciais de acesso no arquivo ConexaoMySQL.java:<br>
+   java<br>
+   private static final String URL = "jdbc:mysql://localhost:3306/BDbiblioteca";<br>
+   private static final String USER = "root"; // substitua pelo seu usuário<br>
    private static final String PASSWORD = " "; // substitua pela sua senha
    
 
 ## Como Executar
 1. Clone o repositório ou baixe os arquivos do projeto.
 2. Certifique-se de que o MySQL está em execução.
-3. Compile e execute a classe AppBiblioteca.java:
-   bash
-   javac -cp .;mysql-connector-j-9.3.0.jar Biblioteca/AppBiblioteca.java
+3. Compile e execute a classe AppBiblioteca.java:<br>
+   bash<br>
+   javac -cp .;mysql-connector-j-9.3.0.jar Biblioteca/AppBiblioteca.java<br>
    java -cp .;mysql-connector-j-9.3.0.jar Biblioteca.AppBiblioteca
    
 
