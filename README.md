@@ -1,4 +1,4 @@
-# Sistema de Biblioteca UNIPE
+# Sistema de Biblioteca UNIPÊ
 
 ## Descrição
 Este projeto é um sistema de gerenciamento de biblioteca desenvolvido em Java, utilizando MySQL como banco de dados. O sistema permite o gerenciamento de alunos, livros e empréstimos, além de oferecer funcionalidades para bibliotecários e alunos.
