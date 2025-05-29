@@ -953,4 +953,199 @@ public class Metodos {
         }
     }
 
+        // CONSULTAS AVANÇADAS
+    public static void consultarLivrosPorGenero() {
+        try {
+            System.out.println("\n=== LIVROS POR GÊNERO ===");
+
+            // Listar gêneros disponíveis
+            System.out.println("Gêneros disponíveis:");
+            try (Connection conn = ConexaoMySQL.getConexao();
+                 Statement stmt = conn.createStatement();
+                 ResultSet rs = stmt.executeQuery("SELECT DISTINCT Genero FROM Livro ORDER BY Genero")) {
+
+                while (rs.next()) {
+                    System.out.println("- " + rs.getString("Genero"));
+                }
+            }
+
+            // Solicitar gênero
+            System.out.print("\nDigite o gênero para filtrar: ");
+            String genero = scanner.nextLine();
+
+            // Buscar livros
+            try (Connection conn = ConexaoMySQL.getConexao();
+                 PreparedStatement stmt = conn.prepareStatement(
+                         "SELECT ID, Titulo, Autor, Ano, Status FROM Livro WHERE Genero LIKE ? ORDER BY Titulo")) {
+
+                stmt.setString(1, "%" + genero + "%");
+                ResultSet rs = stmt.executeQuery();
+
+                boolean encontrou = false;
+                while (rs.next()) {
+                    encontrou = true;
+                    System.out.println("\nID: " + rs.getInt("ID"));
+                    System.out.println("Título: " + rs.getString("Titulo"));
+                    System.out.println("Autor: " + rs.getString("Autor"));
+                    System.out.println("Ano: " + rs.getInt("Ano"));
+                    System.out.println("Status: " + rs.getString("Status"));
+                    System.out.println("---");
+                }
+
+                if (!encontrou) {
+                    System.out.println("Nenhum livro encontrado para este gênero.");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar livros: " + e.getMessage());
+        } finally {
+            pausar();
+        }
+    }
+
+    public static void consultarLivrosPorAutor() {
+        try {
+            System.out.println("\n=== LIVROS POR AUTOR ===");
+
+            // Listar autores disponíveis
+            System.out.println("Autores disponíveis:");
+            try (Connection conn = ConexaoMySQL.getConexao();
+                 Statement stmt = conn.createStatement();
+                 ResultSet rs = stmt.executeQuery("SELECT DISTINCT Autor FROM Livro ORDER BY Autor")) {
+
+                while (rs.next()) {
+                    System.out.println("- " + rs.getString("Autor"));
+                }
+            }
+
+            // Solicitar autor
+            System.out.print("\nDigite o autor para filtrar: ");
+            String autor = scanner.nextLine();
+
+            // Buscar livros
+            try (Connection conn = ConexaoMySQL.getConexao();
+                 PreparedStatement stmt = conn.prepareStatement(
+                         "SELECT ID, Titulo, Genero, Ano, Status FROM Livro WHERE Autor LIKE ? ORDER BY Titulo")) {
+
+                stmt.setString(1, "%" + autor + "%");
+                ResultSet rs = stmt.executeQuery();
+
+                boolean encontrou = false;
+                while (rs.next()) {
+                    encontrou = true;
+                    System.out.println("\nID: " + rs.getInt("ID"));
+                    System.out.println("Título: " + rs.getString("Titulo"));
+                    System.out.println("Gênero: " + rs.getString("Genero"));
+                    System.out.println("Ano: " + rs.getInt("Ano"));
+                    System.out.println("Status: " + rs.getString("Status"));
+                    System.out.println("---");
+                }
+
+                if (!encontrou) {
+                    System.out.println("Nenhum livro encontrado para este autor.");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar livros: " + e.getMessage());
+        } finally {
+            pausar();
+        }
+    }
+
+    public static void consultarLivrosPorStatus() {
+        try {
+            System.out.println("\n=== LIVROS POR STATUS ===");
+
+            System.out.println("Status disponíveis:");
+            System.out.println("1. Disponível");
+            System.out.println("2. Emprestado");
+            System.out.println("3. Em manutenção");
+            System.out.print("Escolha: ");
+
+            int opcao = Integer.parseInt(scanner.nextLine());
+            String status;
+
+            switch (opcao) {
+                case 1: status = "Disponível"; break;
+                case 2: status = "Emprestado"; break;
+                case 3: status = "Em manutenção"; break;
+                default:
+                    System.out.println("Opção inválida.");
+                    return;
+            }
+
+            // Buscar livros
+            try (Connection conn = ConexaoMySQL.getConexao();
+                 PreparedStatement stmt = conn.prepareStatement(
+                         "SELECT ID, Titulo, Autor, Genero FROM Livro WHERE Status = ? ORDER BY Titulo")) {
+
+                stmt.setString(1, status);
+                ResultSet rs = stmt.executeQuery();
+
+                boolean encontrou = false;
+                while (rs.next()) {
+                    encontrou = true;
+                    System.out.println("\nID: " + rs.getInt("ID"));
+                    System.out.println("Título: " + rs.getString("Titulo"));
+                    System.out.println("Autor: " + rs.getString("Autor"));
+                    System.out.println("Gênero: " + rs.getString("Genero"));
+                    System.out.println("---");
+                }
+
+                if (!encontrou) {
+                    System.out.println("Nenhum livro encontrado com este status.");
+                }
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Digite um número válido!");
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar livros: " + e.getMessage());
+        } finally {
+            pausar();
+        }
+    }
+
+    public static void consultarAtrasados() {
+        try {
+            System.out.println("\n=== EMPRÉSTIMOS ATRASADOS ===");
+
+            try (Connection conn = ConexaoMySQL.getConexao();
+                 PreparedStatement stmt = conn.prepareStatement(
+                         "SELECT e.ID, c.RGM, c.Nome AS NomeAluno, l.Titulo, e.DataRetirada, e.DataDevolucao " +
+                                 "FROM Emprestimo e " +
+                                 "JOIN ClienteEmprestimo ce ON e.ID = ce.ID_Emprestimo " +
+                                 "JOIN Cliente c ON ce.RGM_Cliente = c.RGM " +
+                                 "JOIN EmprestimoLivro el ON e.ID = el.ID_Emprestimo " +
+                                 "JOIN Livro l ON el.ID_Livro = l.ID " +
+                                 "WHERE e.Status = 'Ativo' AND e.DataDevolucao < CURDATE() " +
+                                 "ORDER BY e.DataDevolucao");
+                 ResultSet rs = stmt.executeQuery()) {
+
+                boolean encontrou = false;
+                while (rs.next()) {
+                    encontrou = true;
+                    System.out.println("\nID Empréstimo: " + rs.getInt("ID"));
+                    System.out.println("Aluno: " + rs.getString("NomeAluno") + " (RGM: " + rs.getInt("RGM") + ")");
+                    System.out.println("Livro: " + rs.getString("Titulo"));
+                    System.out.println("Retirada: " + rs.getDate("DataRetirada"));
+                    System.out.println("Devolução prevista: " + rs.getDate("DataDevolucao"));
+
+                    // Calcular dias de atraso
+                    long diff = new Date().getTime() - rs.getDate("DataDevolucao").getTime();
+                    long diasAtraso = diff / (1000 * 60 * 60 * 24);
+                    System.out.println("Dias em atraso: " + diasAtraso);
+                    System.out.println("---");
+                }
+
+                if (!encontrou) {
+                    System.out.println("Nenhum empréstimo em atraso no momento.");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar empréstimos: " + e.getMessage());
+        } finally {
+            pausar();
+        }
+    }
+
 }
