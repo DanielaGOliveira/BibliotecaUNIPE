@@ -1,4 +1,4 @@
-package src.Biblioteca; // Define o pacote onde esta classe está localizada
+package Biblioteca; // Define o pacote onde esta classe está localizada
 import java.util.Scanner; // Importa a classe Scanner para entrada de dados do usuário
 import static src.Biblioteca.Metodos.*; // Importa todos os métodos estáticos da classe Metodos do pacote Biblioteca
 

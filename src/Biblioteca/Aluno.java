@@ -1,4 +1,4 @@
-package src.Biblioteca;
+package Biblioteca;
 
 /**
  * Representa um aluno cadastrado na biblioteca.
