@@ -1,4 +1,4 @@
-package src.Biblioteca.conexao;
+package Biblioteca.conexao;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
